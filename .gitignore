@@ -129,6 +129,6 @@ GitHub.sublime-settings
 !.vscode/launch.json
 !.vscode/extensions.json
 
-bin
+bin/
 pip-selfcheck.json
 pyvenv.cfg
