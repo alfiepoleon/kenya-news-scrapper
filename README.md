@@ -1,6 +1,6 @@
 # Kenya News Scrapper
 
-It gets news from [Tuko](https:www.tuko.co.ke), [Capital FM](http://www.capitalfm.co.ke/), [The Standard](https://www.standardmedia.co.ke/), [Daily Nation](http://www.nation.co.ke/news) and [The Star](http://www.the-star.co.ke/), then returns top news from each and a summary of each news give you a summary of each article,(except The Standard, I'm yet to figure out a way)
+It gets news from [Tuko](https:www.tuko.co.ke), [Capital FM](http://www.capitalfm.co.ke/), [The Standard](https://www.standardmedia.co.ke/), [Daily Nation](http://www.nation.co.ke/news) and [The Star](http://www.the-star.co.ke/), then returns top news from each and a short summary of each article(except The Standard, I'm yet to figure this out)
 
 ### Screenshots
 ![alt text](https://cloud.githubusercontent.com/assets/14350051/26034663/b061c69c-38c8-11e7-9c6c-cbd23fecc9c3.png)
@@ -19,7 +19,6 @@ pip install requests beautifulsoup4
 A step by step series of examples that tell you have to get a development env running in unix systems
 
 1. Clone the repo
-
 
 2. Setting up a virtual environment, [Python 3 virtual env docs](https://docs.python.org/3/library/venv.html)
 
