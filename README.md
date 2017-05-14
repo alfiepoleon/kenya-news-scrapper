@@ -1,6 +1,12 @@
 # Kenya News Scrapper
 
-It scrapes news from [Tuko](https:www.tuko.co.ke), [Capital FM](http://www.capitalfm.co.ke/), [The Standard](https://www.standardmedia.co.ke/), [Daily Nation](http://www.nation.co.ke/news) and [The Star](http://www.the-star.co.ke/), then returns top news from each and a summary of each news give you a summary of each article,(except The Standard, I'm yet to figure out a way)
+It gets news from [Tuko](https:www.tuko.co.ke), [Capital FM](http://www.capitalfm.co.ke/), [The Standard](https://www.standardmedia.co.ke/), [Daily Nation](http://www.nation.co.ke/news) and [The Star](http://www.the-star.co.ke/), then returns top news from each and a summary of each news give you a summary of each article,(except The Standard, I'm yet to figure out a way)
+
+### Screenshots
+![alt text](https://cloud.githubusercontent.com/assets/14350051/26034663/b061c69c-38c8-11e7-9c6c-cbd23fecc9c3.png)
+![alt text](https://cloud.githubusercontent.com/assets/14350051/26034664/b06ca67a-38c8-11e7-87b6-efb5919989bb.png)
+![alt text](https://cloud.githubusercontent.com/assets/14350051/26034665/b06d645c-38c8-11e7-817b-90769fceb77e.png)
+
 
 ### Prerequisites
 
@@ -45,4 +51,3 @@ python scrape.py
 ## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE.md](LICENSE.md) file for details
-
