@@ -40,7 +40,7 @@ python scrape.py
 
 * [Python HTTP Requests](https://github.com/kennethreitz/requests/) - HTTP for Humans
 * [Beautiful Soup 4](https://www.crummy.com/software/BeautifulSoup/) - html parser
-* Me - ¯\\\_(ツ)_/¯
+* Me ¯\\\_(ツ)_/¯
 
 ## License
 
