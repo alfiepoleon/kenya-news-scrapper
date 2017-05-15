@@ -1,6 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
 
+'''
+This is to run from the python console, returns news in the python console.
+'''
+
 
 def get_tuko():
     tuko = requests.get('https://www.tuko.co.ke')
@@ -81,5 +85,6 @@ def get_all_news():
     get_standard()
     get_nation()
     get_the_star()
+
 
 get_all_news()

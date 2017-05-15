@@ -1,6 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
 
+'''
+This is used by flask, returns json {'title': title, 'link': link, 'content': ''}.
+'''
+
 
 def get_tuko():
     tuko = requests.get('https://www.tuko.co.ke')
@@ -75,7 +79,8 @@ def get_nation():
         news_dict = {
             'title': link.get_text(),
             'link': complete_link,
-            'content': [link_inner.get_text().strip() for link_inner in soup_link.select('section.summary > div > ul li')]
+            'content': [link_inner.get_text().strip() for link_inner in
+                        soup_link.select('section.summary > div > ul li')]
         }
         nation.append(news_dict)
     return nation
