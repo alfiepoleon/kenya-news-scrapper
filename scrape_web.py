@@ -1,12 +1,21 @@
 import requests
 from bs4 import BeautifulSoup
+from pymongo import MongoClient
+import datetime
+import os
 
 '''
 This is used by flask, returns json {'title': title, 'link': link, 'content': ''}.
 '''
 
+# Configure the connection to the database
+client = MongoClient(os.environ['MongoDB_URI'])
+db = client['kenya-news']  # Select the database
+collection = db.news
+
 
 def get_tuko():
+    print('starting')
     tuko = requests.get('https://www.tuko.co.ke')
     soup = BeautifulSoup(tuko.text, 'html.parser')
     tuko = []
@@ -16,12 +25,15 @@ def get_tuko():
         tuko_link = requests.get(link.get('href'))
         soup_link = BeautifulSoup(tuko_link.text, 'html.parser')
         news_dict = {
+            'source': 'tuko',
             'title': link.get_text(),
             'link': link.get('href'),
             'content': [link_inner.get_text().strip(' ,.-') for link_inner in
                         soup_link.select('p.align-left > strong', limit=3) if
-                        link_inner.get_text() != 'READ ALSO: ']
+                        link_inner.get_text() != 'READ ALSO: '],
+            'date': datetime.datetime.utcnow()
         }
+        collection.update({'link': link.get('href')}, news_dict, upsert=True)
         tuko.append(news_dict)
     return tuko
 
@@ -36,11 +48,14 @@ def get_capital():
         capital_link = requests.get(link.get('href'))
         soup_link = BeautifulSoup(capital_link.text, 'html.parser')
         news_dict = {
+            'source': 'capital',
             'title': link.get('title'),
             'link': link.get('href'),
             'content': [link_inner.get_text().split(None, 4)[4].strip(' ,.- \u2013') for link_inner in
-                        soup_link.select('p > strong', limit=1)]
+                        soup_link.select('p > strong', limit=1)],
+            'date': datetime.datetime.utcnow()
         }
+        collection.update({'link': link.get('href')}, news_dict, upsert=True)
         capital.append(news_dict)
     return capital
 
@@ -54,10 +69,13 @@ def get_standard():
             news_title = '{}({})'.format(link.get_text(), link.get('href'))
             print(news_title)
             news_dict = {
+                'source': 'standard',
                 'title': link.get_text(),
                 'link': link.get('href'),
-                'content': []
+                'content': [],
+                'date': datetime.datetime.utcnow()
             }
+            collection.update({'link': link.get('href')}, news_dict, upsert=True)
             standard.append(news_dict)
     return standard
 
@@ -77,11 +95,14 @@ def get_nation():
         nation_link = requests.get(complete_link)
         soup_link = BeautifulSoup(nation_link.text, 'html.parser')
         news_dict = {
+            'source': 'nation',
             'title': link.get_text(),
             'link': complete_link,
             'content': [link_inner.get_text().strip() for link_inner in
-                        soup_link.select('section.summary > div > ul li')]
+                        soup_link.select('section.summary > div > ul li')],
+            'date': datetime.datetime.utcnow()
         }
+        collection.update({'link': complete_link}, news_dict, upsert=True)
         nation.append(news_dict)
     return nation
 
@@ -100,10 +121,13 @@ def get_the_star():
         star_link = requests.get(complete_link)
         soup_link = BeautifulSoup(star_link.text, 'html.parser')
         news_dict = {
+            'source': 'star',
             'title': link.get_text(),
             'link': complete_link,
-            'content': [link_inner.get_text() for link_inner in soup_link.select('.field.field-name-body p', limit=2)]
+            'content': [link_inner.get_text() for link_inner in soup_link.select('.field.field-name-body p', limit=2)],
+            'date': datetime.datetime.utcnow()
         }
+        collection.update({'link': complete_link}, news_dict, upsert=True)
         star.append(news_dict)
     return star
 
@@ -112,5 +136,8 @@ def get_news():
     get_tuko()
     get_capital()
     get_nation()
-    get_the_star()
+    # get_the_star() #Their homepage is returning an error
     get_standard()
+
+
+get_news()
