@@ -146,4 +146,3 @@ schedule.every(2).hours.do(get_news())
 while True:
     schedule.run_pending()
     time.sleep(1)
-get_news()
