@@ -1,7 +1,13 @@
 from flask import Flask, jsonify
-from scrape_web import *
+from pymongo import MongoClient
+import os
 
 app = Flask(__name__)
+
+# Configure the connection to the database
+client = MongoClient(os.environ['MongoDB_URI'])
+db = client['kenya-news']  # Select the database
+collection = db.news
 
 
 @app.route('/')
@@ -11,32 +17,38 @@ def hello_world():
 
 @app.route('/tuko')
 def tuko():
-    return jsonify(get_tuko())
+    tuko_docs = [doc for doc in collection.find({'source': 'tuko'}, {'_id': 0})]
+    return jsonify(tuko_docs)
 
 
 @app.route('/capital')
 def capital():
-    return jsonify(get_capital())
+    capital_docs = [doc for doc in collection.find({'source': 'capital'}, {'_id': 0})]
+    return jsonify(capital_docs)
 
 
 @app.route('/nation')
 def nation():
-    return jsonify(get_nation())
+    nation_docs = [doc for doc in collection.find({'source': 'nation'}, {'_id': 0})]
+    return jsonify(nation_docs)
 
 
 # @app.route('/the-star')
 # def the_star():
-#     return jsonify(get_the_star())
+#     the_star_docs = [doc for doc in collection.find({'source': 'the_star'}, {'_id': 0})]
+#     return jsonify(the_star_docs)
 
 
 @app.route('/standard')
 def standard():
-    return jsonify(get_standard())
+    standard_docs = [doc for doc in collection.find({'source': 'standard'}, {'_id': 0})]
+    return jsonify(standard_docs)
 
 
 @app.route('/latest-news')
 def latest_news():
-    return jsonify(get_news())
+    news = [doc for doc in collection.find({}, {'_id': 0})]
+    return jsonify(news)
 
 
 if __name__ == '__main__':
