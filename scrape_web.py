@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 from pymongo import MongoClient
 import datetime
 import os
+import schedule
+import time
 
 '''
 This is used by flask, returns json {'title': title, 'link': link, 'content': ''}.
@@ -139,5 +141,9 @@ def get_news():
     # get_the_star() #Their homepage is returning an error
     get_standard()
 
+schedule.every(2).hours.do(get_news())
 
+while True:
+    schedule.run_pending()
+    time.sleep(1)
 get_news()
