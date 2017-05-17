@@ -1,9 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
+from datetime import date
 
 '''
 This is to run from the python console, returns news in the python console.
 '''
+today = date.today()
 
 
 def get_tuko():
@@ -20,15 +22,16 @@ def get_tuko():
 
 
 def get_capital():
-    capital = requests.get('http://www.capitalfm.co.ke/')
+    capital_url = 'http://www.capitalfm.co.ke/news/{}/{:02}'.format(today.year, today.month)
+    capital = requests.get(capital_url)
     soup = BeautifulSoup(capital.text, 'html.parser')
-    for link in soup.select('#leading-stories a', limit=6):
-        print(link.get('title'), link.get('href'))
-        capital_link = requests.get(link.get('href'))
-        soup_link = BeautifulSoup(capital_link.text, 'html.parser')
-        for link_inner in soup_link.select('p > strong', limit=1):
-            print('\t', link_inner.get_text())
-        print('\n')
+    for article in soup.select('div.entry-information'):
+        article_link = article.a
+        title = article_link['href']
+        link = article_link.get_text()
+        summary = article.p.get_text().split('-')[1].strip()
+        print(title, link)
+        print(summary, '\n')
 
 
 def get_standard():
@@ -80,11 +83,11 @@ def get_the_star():
 
 
 def get_all_news():
-    get_tuko()
+    # get_tuko()
     get_capital()
-    get_standard()
-    get_nation()
-    get_the_star()
+    # get_standard()
+    # get_nation()
+    # get_the_star()
 
 
 get_all_news()
