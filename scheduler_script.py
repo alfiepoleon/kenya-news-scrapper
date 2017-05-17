@@ -6,7 +6,7 @@ manager = Manager(app)
 
 
 @manager.command
-def get_news():
+def scrape_news():
     get_news()
 
 
