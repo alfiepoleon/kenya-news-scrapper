@@ -1,11 +1,14 @@
 beautifulsoup4==4.6.0
 click==6.7
 Flask==0.12.1
+Flask-Script==2.0.5
 gunicorn==19.7.1
 itsdangerous==0.24
 Jinja2==2.9.6
 MarkupSafe==1.0
 pymongo==3.4.0
+pytz==2017.2
 requests==2.14.2
-schedule==0.4.2
+six==1.10.0
+tzlocal==1.4
 Werkzeug==0.12.1
