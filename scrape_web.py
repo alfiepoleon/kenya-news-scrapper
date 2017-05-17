@@ -136,6 +136,6 @@ def get_the_star():
 def get_news():
     get_tuko()
     get_capital()
-    # get_the_star() #Their homepage is returning an error
+    get_the_star()
     get_standard()
     get_nation()

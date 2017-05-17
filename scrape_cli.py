@@ -6,6 +6,9 @@ from datetime import date
 This is to run from the python console, returns news in the python console.
 '''
 today = date.today()
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
+}
 
 
 def get_tuko():
@@ -43,6 +46,7 @@ def get_standard():
             print(link.get_text(), link.get('href'))
             # standard_link = requests.get(link.get('href'))
             # soup_link = BeautifulSoup(standard_link.text, 'html.parser')
+            print('\n')
 
 
 def get_nation():
@@ -65,7 +69,7 @@ def get_nation():
 
 
 def get_the_star():
-    star = requests.get('http://www.the-star.co.ke/')
+    star = requests.get('http://www.the-star.co.ke/', headers=headers)
     soup = BeautifulSoup(star.text, 'html.parser')
     top_stories = soup.select('.field.field-name-title > h1 > a', limit=7)
     medium_stories = soup.select('h1.field-content > a', limit=10)
@@ -73,7 +77,7 @@ def get_the_star():
     for link in star_stories:
         complete_link = 'http://www.the-star.co.ke{}'.format(link.get('href'))
         print(link.get_text(), complete_link)
-        star_link = requests.get(complete_link)
+        star_link = requests.get(complete_link, headers=headers)
         soup_link = BeautifulSoup(star_link.text, 'html.parser')
         # summary_ul = soup_link.select('section.summary > div > ul')
         for link_inner in soup_link.select('.field.field-name-body p', limit=2):
@@ -83,11 +87,11 @@ def get_the_star():
 
 
 def get_all_news():
-    # get_tuko()
+    get_tuko()
     get_capital()
-    # get_standard()
-    # get_nation()
-    # get_the_star()
+    get_standard()
+    get_nation()
+    get_the_star()
 
 
 get_all_news()
