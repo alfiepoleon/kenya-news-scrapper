@@ -1,3 +1,4 @@
+import json
 import requests
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
@@ -26,6 +27,7 @@ def get_tuko():
         print(news_title)
         tuko_link = requests.get(link.get('href'))
         soup_link = BeautifulSoup(tuko_link.text, 'html.parser')
+        article_date = soup_link.find("meta", property="og:updated_time")['content']
         news_dict = {
             'source': 'tuko',
             'title': link.get_text(),
@@ -33,7 +35,8 @@ def get_tuko():
             'content': [link_inner.get_text().strip(' ,.-') for link_inner in
                         soup_link.select('p.align-left > strong', limit=3) if
                         link_inner.get_text() != 'READ ALSO: '],
-            'date': datetime.datetime.utcnow()
+            'date': article_date,
+            'date_added': datetime.datetime.utcnow()
         }
         collection.update({'link': link.get('href')}, news_dict, upsert=True)
         tuko.append(news_dict)
@@ -47,15 +50,20 @@ def get_capital():
     capital = []
     for article in soup.select('div.entry-information'):
         article_link = article.a
-        title = article_link['href']
-        link = article_link.get_text()
+        link = article_link['href']
+        title = article_link.get_text()
         summary = article.p.get_text().split('-')[1].strip()
+        capital_link = requests.get(link)
+        soup_link = BeautifulSoup(capital_link.text, 'html.parser')
+        print(title, link)
+        article_date = soup_link.find("meta", property="article:published_time")['content']
         news_dict = {
             'source': 'capital',
             'title': title,
             'link': link,
             'content': [summary],
-            'date': datetime.datetime.utcnow()
+            'date': article_date,
+            'date_added': datetime.datetime.utcnow()
         }
         collection.update({'link': link}, news_dict, upsert=True)
         capital.append(news_dict)
@@ -68,14 +76,25 @@ def get_standard():
     standard = []
     for link in soup.select('.col-xs-8.zero a', limit=11):
         if link.get_text():
-            news_title = '{}({})'.format(link.get_text(), link.get('href'))
+            news_title = '{}({})'.format(link.get_text().strip(), link.get('href'))
             print(news_title)
+            standard_link = requests.get(link.get('href'))
+            soup_link = BeautifulSoup(standard_link.text, 'html.parser')
+            article_date = 0
+            content = ''
+            try:
+                data = json.loads(soup_link.find('script', type='application/ld+json').text.replace("\\", r"\\"))
+                article_date = data['dateModified']
+                content = data['description']
+            except ValueError:
+                print('Invalid json detected')
             news_dict = {
                 'source': 'standard',
-                'title': link.get_text(),
+                'title': link.get_text().strip(),
                 'link': link.get('href'),
-                'content': [],
-                'date': datetime.datetime.utcnow()
+                'content': content,
+                'date': article_date,
+                'date_added': datetime.datetime.utcnow()
             }
             collection.update({'link': link.get('href')}, news_dict, upsert=True)
             standard.append(news_dict)
@@ -96,13 +115,15 @@ def get_nation():
         print(news_title)
         nation_link = requests.get(complete_link)
         soup_link = BeautifulSoup(nation_link.text, 'html.parser')
+        article_date = soup_link.find("meta", property="og:article:modified_time")['content']
         news_dict = {
             'source': 'nation',
             'title': link.get_text(),
             'link': complete_link,
             'content': [link_inner.get_text().strip() for link_inner in
                         soup_link.select('section.summary > div > ul li')],
-            'date': datetime.datetime.utcnow()
+            'date': article_date,
+            'date_added': datetime.datetime.utcnow()
         }
         collection.update({'link': complete_link}, news_dict, upsert=True)
         nation.append(news_dict)
@@ -127,7 +148,8 @@ def get_the_star():
             'title': link.get_text(),
             'link': complete_link,
             'content': [link_inner.get_text() for link_inner in soup_link.select('.field.field-name-body p', limit=2)],
-            'date': datetime.datetime.utcnow()
+            'date': datetime.datetime.utcnow(),
+            'date_added': datetime.datetime.utcnow()
         }
         collection.update({'link': complete_link}, news_dict, upsert=True)
         star.append(news_dict)
@@ -135,8 +157,8 @@ def get_the_star():
 
 
 def get_news():
-    # get_tuko()
+    get_tuko()
     get_capital()
-    # get_standard()
-    # get_nation()
+    get_standard()
+    get_nation()
     # get_the_star()
