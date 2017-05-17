@@ -10,6 +10,7 @@ This is used by flask, returns json {'title': title, 'link': link, 'content': ''
 
 # Configure the connection to the database
 client = MongoClient(os.environ['MongoDB_URI'])
+# client = MongoClient('localhost', 27017)
 db = client['kenya-news']  # Select the database
 collection = db.news
 
@@ -135,6 +136,6 @@ def get_the_star():
 def get_news():
     get_tuko()
     get_capital()
-    get_nation()
     # get_the_star() #Their homepage is returning an error
     get_standard()
+    get_nation()
