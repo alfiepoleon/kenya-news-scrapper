@@ -1,3 +1,4 @@
+import json
 import requests
 from bs4 import BeautifulSoup
 from datetime import date
@@ -20,7 +21,7 @@ def get_tuko():
         tuko_link = requests.get(link.get('href'))
         soup_link = BeautifulSoup(tuko_link.text, 'html.parser')
         for link_inner in soup_link.select('p.align-left > strong', limit=3):
-            print('\t', link_inner.get_text())
+            print('\t', link_inner.get_text().strip())
         print('\n')
 
 
@@ -30,11 +31,11 @@ def get_capital():
     soup = BeautifulSoup(capital.text, 'html.parser')
     for article in soup.select('div.entry-information'):
         article_link = article.a
-        title = article_link['href']
-        link = article_link.get_text()
+        link = article_link['href']
+        title = article_link.get_text()
         summary = article.p.get_text().split('-')[1].strip()
         print(title, link)
-        print(summary, '\n')
+        print('\t -', summary, '\n')
 
 
 def get_standard():
@@ -43,10 +44,16 @@ def get_standard():
 
     for link in soup.select('.col-xs-8.zero a', limit=11):
         if link.get_text():
-            print(link.get_text(), link.get('href'))
-            # standard_link = requests.get(link.get('href'))
-            # soup_link = BeautifulSoup(standard_link.text, 'html.parser')
-            print('\n')
+            print(link.get_text().strip(), link.get('href'))
+            standard_link = requests.get(link.get('href'))
+            soup_link = BeautifulSoup(standard_link.text, 'html.parser')
+            content = ''
+            try:
+                data = json.loads(soup_link.find('script', type='application/ld+json').text.replace("\\", r"\\"))
+                content = data['description']
+            except ValueError:
+                print('Invalid json detected')
+            print('\t -', content, '\n')
 
 
 def get_nation():
@@ -64,7 +71,7 @@ def get_nation():
         # summary_ul = soup_link.select('section.summary > div > ul')
         for link_inner in soup_link.select('section.summary > div > ul li'):
             # print(link_inner)
-            print('\t', link_inner.get_text())
+            print('\t -', link_inner.get_text())
         print('\n')
 
 
