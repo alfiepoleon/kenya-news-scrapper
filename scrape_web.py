@@ -7,6 +7,7 @@ import os
 '''
 This is used by flask, returns json {'title': title, 'link': link, 'content': ''}.
 '''
+today = datetime.date.today()
 
 # Configure the connection to the database
 client = MongoClient(os.environ['MongoDB_URI'])
@@ -40,23 +41,23 @@ def get_tuko():
 
 
 def get_capital():
-    capital = requests.get('http://www.capitalfm.co.ke/')
+    capital_url = 'http://www.capitalfm.co.ke/news/{}/{:02}'.format(today.year, today.month)
+    capital = requests.get(capital_url)
     soup = BeautifulSoup(capital.text, 'html.parser')
     capital = []
-    for link in soup.select('#leading-stories a', limit=6):
-        news_title = '{}({})'.format(link.get('title'), link.get('href'))
-        print(news_title)
-        capital_link = requests.get(link.get('href'))
-        soup_link = BeautifulSoup(capital_link.text, 'html.parser')
+    for article in soup.select('div.entry-information'):
+        article_link = article.a
+        title = article_link['href']
+        link = article_link.get_text()
+        summary = article.p.get_text().split('-')[1].strip()
         news_dict = {
             'source': 'capital',
-            'title': link.get('title'),
-            'link': link.get('href'),
-            'content': [link_inner.get_text().split(None, 4)[4].strip(' ,.- \u2013') for link_inner in
-                        soup_link.select('p > strong', limit=1)],
+            'title': title,
+            'link': link,
+            'content': [summary],
             'date': datetime.datetime.utcnow()
         }
-        collection.update({'link': link.get('href')}, news_dict, upsert=True)
+        collection.update({'link': link}, news_dict, upsert=True)
         capital.append(news_dict)
     return capital
 
@@ -134,8 +135,8 @@ def get_the_star():
 
 
 def get_news():
-    get_tuko()
+    # get_tuko()
     get_capital()
-    get_standard()
-    get_nation()
-    get_the_star()
+    # get_standard()
+    # get_nation()
+    # get_the_star()
