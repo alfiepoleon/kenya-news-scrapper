@@ -1,6 +1,6 @@
 import json
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, SoupStrainer
 from pymongo import MongoClient
 import datetime
 import os
@@ -18,15 +18,14 @@ collection = db.news
 
 
 def get_tuko():
-    print('starting')
     tuko = requests.get('https://www.tuko.co.ke')
-    soup = BeautifulSoup(tuko.text, 'html.parser')
+    soup = BeautifulSoup(tuko.text, 'lxml', parse_only=SoupStrainer('a'))
     tuko = []
     for link in soup.select('a.news__link', limit=6):
         news_title = '{}({})'.format(link.get_text(), link.get('href'))
         print(news_title)
         tuko_link = requests.get(link.get('href'))
-        soup_link = BeautifulSoup(tuko_link.text, 'html.parser')
+        soup_link = BeautifulSoup(tuko_link.text, 'lxml', parse_only=SoupStrainer(['p', 'meta']))
         article_date = soup_link.find("meta", property="og:updated_time")['content']
         news_dict = {
             'source': 'tuko',
@@ -46,7 +45,7 @@ def get_tuko():
 def get_capital():
     capital_url = 'http://www.capitalfm.co.ke/news/{}/{:02}'.format(today.year, today.month)
     capital = requests.get(capital_url)
-    soup = BeautifulSoup(capital.text, 'html.parser')
+    soup = BeautifulSoup(capital.text, 'lxml', parse_only=SoupStrainer('div'))
     capital = []
     for article in soup.select('div.entry-information'):
         article_link = article.a
@@ -54,7 +53,7 @@ def get_capital():
         title = article_link.get_text()
         summary = article.p.get_text().split('-')[1].strip()
         capital_link = requests.get(link)
-        soup_link = BeautifulSoup(capital_link.text, 'html.parser')
+        soup_link = BeautifulSoup(capital_link.text, 'lxml', parse_only=SoupStrainer('meta'))
         print(title, link)
         article_date = soup_link.find("meta", property="article:published_time")['content']
         news_dict = {
@@ -72,14 +71,14 @@ def get_capital():
 
 def get_standard():
     standard = requests.get('https://www.standardmedia.co.ke/')
-    soup = BeautifulSoup(standard.text, 'html.parser')
+    soup = BeautifulSoup(standard.text, 'lxml', parse_only=SoupStrainer('div'))
     standard = []
     for link in soup.select('.col-xs-8.zero a', limit=11):
         if link.get_text():
             news_title = '{}({})'.format(link.get_text().strip(), link.get('href'))
             print(news_title)
             standard_link = requests.get(link.get('href'))
-            soup_link = BeautifulSoup(standard_link.text, 'html.parser')
+            soup_link = BeautifulSoup(standard_link.text, 'lxml', parse_only=SoupStrainer('script'))
             article_date = 0
             content = ''
             try:
@@ -103,9 +102,9 @@ def get_standard():
 
 def get_nation():
     nation = requests.get('http://www.nation.co.ke/news')
-    soup = BeautifulSoup(nation.text, 'html.parser')
+    soup = BeautifulSoup(nation.text, 'lxml', parse_only=SoupStrainer('div'))
     top_teaser = soup.select('.story-teaser.top-teaser > h1 > a')
-    medium_teasers = soup.select('.story-teaser.medium-teaser > h2 > a', limit=4)
+    medium_teasers = soup.select('.story-teaser.medium-teaser > h2 > a', limit=5)
     tiny_teasers = soup.select('.story-teaser.tiny-teaser > a:nth-of-type(2)')
     nation_stories = top_teaser + medium_teasers + tiny_teasers
     nation = []
@@ -114,8 +113,12 @@ def get_nation():
         news_title = '{}({})'.format(link.get_text(), complete_link)
         print(news_title)
         nation_link = requests.get(complete_link)
-        soup_link = BeautifulSoup(nation_link.text, 'html.parser')
-        article_date = soup_link.find("meta", property="og:article:modified_time")['content']
+        soup_link = BeautifulSoup(nation_link.text, 'lxml', parse_only=SoupStrainer(['meta', 'section']))
+        article_date = 0
+        try:
+            article_date = soup_link.find("meta", property="og:article:modified_time")['content']
+        except (TypeError, ValueError):
+            print('Invalid date meta detected')
         news_dict = {
             'source': 'nation',
             'title': link.get_text(),
@@ -132,7 +135,7 @@ def get_nation():
 
 def get_the_star():
     star = requests.get('http://www.the-star.co.ke/')
-    soup = BeautifulSoup(star.text, 'html.parser')
+    soup = BeautifulSoup(star.text, 'lxml')
     top_stories = soup.select('.field.field-name-title > h1 > a', limit=7)
     medium_stories = soup.select('h1.field-content > a', limit=10)
     star_stories = top_stories + medium_stories
@@ -142,7 +145,7 @@ def get_the_star():
         news_title = '{}({})'.format(link.get_text(), complete_link)
         print(news_title)
         star_link = requests.get(complete_link)
-        soup_link = BeautifulSoup(star_link.text, 'html.parser')
+        soup_link = BeautifulSoup(star_link.text, 'lxml')
         news_dict = {
             'source': 'star',
             'title': link.get_text(),
