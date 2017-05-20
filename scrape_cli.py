@@ -14,12 +14,12 @@ headers = {
 
 def get_tuko():
     tuko = requests.get('https://www.tuko.co.ke')
-    soup = BeautifulSoup(tuko.text, 'html.parser')
+    soup = BeautifulSoup(tuko.text, 'lxml')
 
     for link in soup.select('a.news__link', limit=6):
         print(link.get_text(), link.get('href'))
         tuko_link = requests.get(link.get('href'))
-        soup_link = BeautifulSoup(tuko_link.text, 'html.parser')
+        soup_link = BeautifulSoup(tuko_link.text, 'lxml')
         for link_inner in soup_link.select('p.align-left > strong', limit=3):
             print('\t', link_inner.get_text().strip())
         print('\n')
@@ -28,7 +28,7 @@ def get_tuko():
 def get_capital():
     capital_url = 'http://www.capitalfm.co.ke/news/{}/{:02}'.format(today.year, today.month)
     capital = requests.get(capital_url)
-    soup = BeautifulSoup(capital.text, 'html.parser')
+    soup = BeautifulSoup(capital.text, 'lxml')
     for article in soup.select('div.entry-information'):
         article_link = article.a
         link = article_link['href']
@@ -40,13 +40,13 @@ def get_capital():
 
 def get_standard():
     standard = requests.get('https://www.standardmedia.co.ke/')
-    soup = BeautifulSoup(standard.text, 'html.parser')
+    soup = BeautifulSoup(standard.text, 'lxml')
 
     for link in soup.select('.col-xs-8.zero a', limit=11):
         if link.get_text():
             print(link.get_text().strip(), link.get('href'))
             standard_link = requests.get(link.get('href'))
-            soup_link = BeautifulSoup(standard_link.text, 'html.parser')
+            soup_link = BeautifulSoup(standard_link.text, 'lxml')
             content = ''
             try:
                 data = json.loads(soup_link.find('script', type='application/ld+json').text.replace("\\", r"\\"))
@@ -58,7 +58,7 @@ def get_standard():
 
 def get_nation():
     nation = requests.get('http://www.nation.co.ke/news')
-    soup = BeautifulSoup(nation.text, 'html.parser')
+    soup = BeautifulSoup(nation.text, 'lxml')
     top_teaser = soup.select('.story-teaser.top-teaser > h1 > a')
     medium_teasers = soup.select('.story-teaser.medium-teaser > h2 > a', limit=4)
     tiny_teasers = soup.select('.story-teaser.tiny-teaser > a:nth-of-type(2)')
@@ -67,7 +67,7 @@ def get_nation():
         complete_link = 'http://www.nation.co.ke{}'.format(link.get('href'))
         print(link.get_text(), complete_link)
         nation_link = requests.get(complete_link)
-        soup_link = BeautifulSoup(nation_link.text, 'html.parser')
+        soup_link = BeautifulSoup(nation_link.text, 'lxml')
         # summary_ul = soup_link.select('section.summary > div > ul')
         for link_inner in soup_link.select('section.summary > div > ul li'):
             # print(link_inner)
@@ -77,7 +77,7 @@ def get_nation():
 
 def get_the_star():
     star = requests.get('http://www.the-star.co.ke/', headers=headers)
-    soup = BeautifulSoup(star.text, 'html.parser')
+    soup = BeautifulSoup(star.text, 'lxml')
     top_stories = soup.select('.field.field-name-title > h1 > a', limit=7)
     medium_stories = soup.select('h1.field-content > a', limit=10)
     star_stories = top_stories + medium_stories
@@ -85,7 +85,7 @@ def get_the_star():
         complete_link = 'http://www.the-star.co.ke{}'.format(link.get('href'))
         print(link.get_text(), complete_link)
         star_link = requests.get(complete_link, headers=headers)
-        soup_link = BeautifulSoup(star_link.text, 'html.parser')
+        soup_link = BeautifulSoup(star_link.text, 'lxml')
         # summary_ul = soup_link.select('section.summary > div > ul')
         for link_inner in soup_link.select('.field.field-name-body p', limit=2):
             # print(link_inner)
@@ -97,8 +97,8 @@ def get_all_news():
     get_tuko()
     get_capital()
     get_standard()
-    get_nation()
     get_the_star()
+    get_nation()
 
 
 get_all_news()
