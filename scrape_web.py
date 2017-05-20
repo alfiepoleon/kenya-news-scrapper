@@ -170,7 +170,7 @@ def get_the_star():
                 "meta", property="og:updated_time")['content']
             print(article_date)
         except (TypeError, ValueError):
-            print('Star: nvalid date meta detected')
+            print('Star: invalid date meta detected')
         news_dict = {
             'source': 'star',
             'title': link.get_text(),
