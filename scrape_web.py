@@ -3,12 +3,15 @@ import requests
 from bs4 import BeautifulSoup, SoupStrainer
 from pymongo import MongoClient
 import datetime
+import dateutil.parser
+from pytz import timezone
 import os
 
 '''
 This is used by flask, returns json {'title': title, 'link': link, 'content': ''}.
 '''
 today = datetime.date.today()
+localtz = timezone('Africa/Nairobi')
 
 # Configure the connection to the database
 client = MongoClient(os.environ['MongoDB_URI'])
@@ -25,8 +28,10 @@ def get_tuko():
         news_title = '{}({})'.format(link.get_text(), link.get('href'))
         print(news_title)
         tuko_link = requests.get(link.get('href'))
-        soup_link = BeautifulSoup(tuko_link.text, 'lxml', parse_only=SoupStrainer(['p', 'meta']))
-        article_date = soup_link.find("meta", property="og:updated_time")['content']
+        soup_link = BeautifulSoup(
+            tuko_link.text, 'lxml', parse_only=SoupStrainer(['p', 'meta']))
+        article_date = soup_link.find(
+            "meta", property="og:updated_time")['content']
         news_dict = {
             'source': 'tuko',
             'title': link.get_text(),
@@ -43,7 +48,8 @@ def get_tuko():
 
 
 def get_capital():
-    capital_url = 'http://www.capitalfm.co.ke/news/{}/{:02}'.format(today.year, today.month)
+    capital_url = 'http://www.capitalfm.co.ke/news/{}/{:02}'.format(
+        today.year, today.month)
     capital = requests.get(capital_url)
     soup = BeautifulSoup(capital.text, 'lxml', parse_only=SoupStrainer('div'))
     capital = []
@@ -53,9 +59,11 @@ def get_capital():
         title = article_link.get_text()
         summary = article.p.get_text().split('-')[1].strip()
         capital_link = requests.get(link)
-        soup_link = BeautifulSoup(capital_link.text, 'lxml', parse_only=SoupStrainer('meta'))
+        soup_link = BeautifulSoup(
+            capital_link.text, 'lxml', parse_only=SoupStrainer('meta'))
         print(title, link)
-        article_date = soup_link.find("meta", property="article:published_time")['content']
+        article_date = soup_link.find(
+            "meta", property="article:published_time")['content']
         news_dict = {
             'source': 'capital',
             'title': title,
@@ -75,18 +83,21 @@ def get_standard():
     standard = []
     for link in soup.select('.col-xs-8.zero a', limit=11):
         if link.get_text():
-            news_title = '{}({})'.format(link.get_text().strip(), link.get('href'))
+            news_title = '{}({})'.format(
+                link.get_text().strip(), link.get('href'))
             print(news_title)
             standard_link = requests.get(link.get('href'))
-            soup_link = BeautifulSoup(standard_link.text, 'lxml', parse_only=SoupStrainer('script'))
+            soup_link = BeautifulSoup(
+                standard_link.text, 'lxml', parse_only=SoupStrainer('script'))
             article_date = 0
             content = ''
             try:
-                data = json.loads(soup_link.find('script', type='application/ld+json').text.replace("\\", r"\\"))
+                data = json.loads(soup_link.find(
+                    'script', type='application/ld+json').text.replace("\\", r"\\"))
                 article_date = data['dateModified']
                 content = data['description']
             except ValueError:
-                print('Invalid json detected')
+                print('Standard: invalid json detected')
             news_dict = {
                 'source': 'standard',
                 'title': link.get_text().strip(),
@@ -95,7 +106,8 @@ def get_standard():
                 'date': article_date,
                 'date_added': datetime.datetime.utcnow()
             }
-            collection.update({'link': link.get('href')}, news_dict, upsert=True)
+            collection.update({'link': link.get('href')},
+                              news_dict, upsert=True)
             standard.append(news_dict)
     return standard
 
@@ -104,7 +116,8 @@ def get_nation():
     nation = requests.get('http://www.nation.co.ke/news')
     soup = BeautifulSoup(nation.text, 'lxml', parse_only=SoupStrainer('div'))
     top_teaser = soup.select('.story-teaser.top-teaser > h1 > a')
-    medium_teasers = soup.select('.story-teaser.medium-teaser > h2 > a', limit=5)
+    medium_teasers = soup.select(
+        '.story-teaser.medium-teaser > h2 > a', limit=5)
     tiny_teasers = soup.select('.story-teaser.tiny-teaser > a:nth-of-type(2)')
     nation_stories = top_teaser + medium_teasers + tiny_teasers
     nation = []
@@ -113,12 +126,17 @@ def get_nation():
         news_title = '{}({})'.format(link.get_text(), complete_link)
         print(news_title)
         nation_link = requests.get(complete_link)
-        soup_link = BeautifulSoup(nation_link.text, 'lxml', parse_only=SoupStrainer(['meta', 'section']))
+        soup_link = BeautifulSoup(
+            nation_link.text, 'lxml', parse_only=SoupStrainer(['meta', 'section']))
         article_date = 0
         try:
-            article_date = soup_link.find("meta", property="og:article:modified_time")['content']
+            article_date = soup_link.find(
+                "meta", property="og:article:modified_time")['content']
+            parsed_article_date = dateutil.parser.parse("{}".format(article_date))
+            tz_aware = localtz.localize(parsed_article_date)
+            article_date = tz_aware.isoformat()
         except (TypeError, ValueError):
-            print('Invalid date meta detected')
+            print('Nation: Invalid date meta detected')
         news_dict = {
             'source': 'nation',
             'title': link.get_text(),
@@ -146,12 +164,19 @@ def get_the_star():
         print(news_title)
         star_link = requests.get(complete_link)
         soup_link = BeautifulSoup(star_link.text, 'lxml')
+        article_date = 0
+        try:
+            article_date = soup_link.find(
+                "meta", property="og:updated_time")['content']
+            print(article_date)
+        except (TypeError, ValueError):
+            print('Star: nvalid date meta detected')
         news_dict = {
             'source': 'star',
             'title': link.get_text(),
             'link': complete_link,
             'content': [link_inner.get_text() for link_inner in soup_link.select('.field.field-name-body p', limit=2)],
-            'date': datetime.datetime.utcnow(),
+            'date': article_date,
             'date_added': datetime.datetime.utcnow()
         }
         collection.update({'link': complete_link}, news_dict, upsert=True)
@@ -163,5 +188,5 @@ def get_news():
     get_tuko()
     get_capital()
     get_standard()
+    get_the_star()
     get_nation()
-    # get_the_star()
