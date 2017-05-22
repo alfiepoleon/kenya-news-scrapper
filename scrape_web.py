@@ -54,8 +54,8 @@ def get_tuko():
             'title': link.get_text(),
             'link': link.get('href'),
             'content': [link_inner.get_text().strip(' ,.-') for link_inner in
-                        soup_link.select('p.align-left > strong', limit=3) if
-                        link_inner.get_text() != 'READ ALSO: '],
+                        soup_link.select('p.align-left > strong', limit=3) if not
+                        link_inner.get_text().startswith('READ ALSO')],
             'date': article_date,
             'date_added': datetime.datetime.utcnow()
         }
