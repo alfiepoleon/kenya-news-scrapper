@@ -24,7 +24,7 @@ collection = db.news
 
 def check_connection(url):
     try:
-        request = requests.get(url)
+        request = requests.head(url)
         if request.status_code == 200:
             print('Connection ok...')
         else:
