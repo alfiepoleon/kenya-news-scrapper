@@ -1,7 +1,8 @@
 # Kenya News Scrapper
 
-It gets news from [Tuko](https:www.tuko.co.ke), [Capital FM](http://www.capitalfm.co.ke/), [The Standard](https://www.standardmedia.co.ke/), [Daily Nation](http://www.nation.co.ke/news) and [The Star](http://www.the-star.co.ke/), then returns top news from each and a short summary of each article(except The Standard, I'm yet to figure this out)
+It gets news from [Tuko](https:www.tuko.co.ke), [Capital FM](http://www.capitalfm.co.ke/), [The Standard](https://www.standardmedia.co.ke/), [Daily Nation](http://www.nation.co.ke/news) and [The Star](http://www.the-star.co.ke/), then returns top news from each and a short summary of each article.
 
+There is a cli version and a flask web api version.
 ### Screenshots
 ![alt text](https://cloud.githubusercontent.com/assets/14350051/26034663/b061c69c-38c8-11e7-9c6c-cbd23fecc9c3.png)
 ![alt text](https://cloud.githubusercontent.com/assets/14350051/26034664/b06ca67a-38c8-11e7-87b6-efb5919989bb.png)
@@ -33,14 +34,29 @@ cd /path/to/new/virtual/environment
 source bin/activate
 ```
 4. cd to the cloned directory.(The one with scape.py)
+5. Install the requirements from requirements.txt
 
-5. Run __scrape.py__
+```
+pip install -r requirements.txt
+```
+
+6. Run __scrape_cli.py__ for cli version or...
+
+```
+python scrape.py
+```
+7. First scrape the news sources to create and fill up the database before running the flask version, then...
+
+```
+python scheduler_script.py scrape_news
+```
+8. Run app.py to start web server (you can check end points at app.py)
 
 ```
 python scrape.py
 ```
 
-
+__Note: you can run `python scheduler_script.py delete_old_news` to delete news more that 48 hours old__
 ## Built With
 
 * [Python HTTP Requests](https://github.com/kennethreitz/requests/) - HTTP for Humans
