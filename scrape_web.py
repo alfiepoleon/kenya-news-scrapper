@@ -43,16 +43,30 @@ def get_tuko():
     tuko = requests.get('https://www.tuko.co.ke')
     soup = BeautifulSoup(tuko.text, 'lxml', parse_only=SoupStrainer('a'))
     tuko = []
-    for link in soup.select('a.news__link', limit=6):
+    for link in soup.select('a.news__link', limit=12):
         news_title = '{}({})'.format(link.get_text(), link.get('href'))
         print(news_title)
         tuko_link = requests.get(link.get('href'))
-        soup_link = BeautifulSoup(tuko_link.text, 'lxml', parse_only=SoupStrainer(['p', 'meta']))
-        article_date = soup_link.find("meta", property="og:updated_time")['content']
+        soup_link = BeautifulSoup(tuko_link.text, 'lxml', parse_only=SoupStrainer(['p', 'meta', 'img']))
+        article_date = ''
+        try:
+            article_date = soup_link.find("meta", property="og:updated_time")['content']
+        except (TypeError, ValueError):
+            print('Tuko: No article date meta')
+            continue
+        image = ''
+        try:
+            image = soup_link.find("meta", property="og:image")['content']
+        except (TypeError, ValueError):
+            try:
+                image = soup_link.find('img', class_='article-image__picture')['src']
+            except (TypeError, ValueError):
+                print('Tuko: No image found')
         news_dict = {
             'source': 'tuko',
             'title': link.get_text(),
             'link': link.get('href'),
+            'image': image,
             'content': [link_inner.get_text().strip(' ,.-') for link_inner in
                         soup_link.select('p.align-left > strong', limit=3) if not
                         link_inner.get_text().startswith('READ ALSO')],
@@ -76,13 +90,23 @@ def get_capital():
         title = article_link.get_text()
         summary = article.p.get_text().split('-')[1].strip()
         capital_link = requests.get(link)
-        soup_link = BeautifulSoup(capital_link.text, 'lxml', parse_only=SoupStrainer('meta'))
+        soup_link = BeautifulSoup(capital_link.text, 'lxml', parse_only=SoupStrainer(['meta', 'img']))
         print(title, link)
-        article_date = soup_link.find( "meta", property="article:published_time")['content']
+        article_date = soup_link.find("meta", property="article:published_time")['content']
+        image = ''
+        try:
+            image = soup_link.find("meta", property="og:image")['content']
+        except (TypeError, ValueError):
+            try:
+                image = soup_link.find('img', class_='size-full')['src']
+            except (TypeError, ValueError):
+                print('Capital: No image found')
+
         news_dict = {
             'source': 'capital',
             'title': title,
             'link': link,
+            'image': image,
             'content': [summary],
             'date': article_date,
             'date_added': datetime.datetime.utcnow()
@@ -103,19 +127,27 @@ def get_standard():
             news_title = '{}({})'.format(link.get_text().strip(), link.get('href'))
             print(news_title)
             standard_link = requests.get(link.get('href'))
-            soup_link = BeautifulSoup(standard_link.text, 'lxml', parse_only=SoupStrainer('script'))
+            soup_link = BeautifulSoup(standard_link.text, 'lxml', parse_only=SoupStrainer(['script']))
             article_date = 0
             content = ''
+            image = ''
             try:
                 data = json.loads(soup_link.find('script', type='application/ld+json').text.replace("\\", r"\\"))
                 article_date = data['dateModified']
                 content = data['description']
+                image = data['image']['url']
+                if image == 'https://www.standardmedia.co.ke':
+                    image = ''
+                print(image)
             except ValueError:
                 print('Standard: invalid json detected')
+                continue
+
             news_dict = {
                 'source': 'standard',
                 'title': link.get_text().strip(),
                 'link': link.get('href'),
+                'image': image,
                 'content': content,
                 'date': article_date,
                 'date_added': datetime.datetime.utcnow()
@@ -155,6 +187,7 @@ def get_nation():
             continue
         soup_link = BeautifulSoup(nation_link.text, 'lxml', parse_only=SoupStrainer(['meta', 'section']))
         article_date = 0
+        image = ''
         try:
             article_date = soup_link.find("meta", property="og:article:modified_time")['content']
             # Nation's date isn't in ISO and doesn't have timezone info like the rest, so fixing that...
@@ -164,6 +197,9 @@ def get_nation():
             parsed_article_date += datetime.timedelta(hours=3)
             tz_aware = localtz.localize(parsed_article_date)
             article_date = tz_aware.isoformat()
+
+            # Get image from meta tags
+            image = soup_link.find("meta", property="og:image")['content']
         except (TypeError, ValueError):
             try:
                 article_date = soup_link.find("meta", property="og:article:published_time")['content']
@@ -174,12 +210,17 @@ def get_nation():
                 parsed_article_date += datetime.timedelta(hours=3)
                 tz_aware = localtz.localize(parsed_article_date) + datetime.timedelta(hours=3)
                 article_date = tz_aware.isoformat()
+
+                # Get image from meta tags
+                image = soup_link.find("meta", property="og:image")['content']
             except (TypeError, ValueError):
                 print('Nation: Invalid date meta detected')
+                continue
         news_dict = {
             'source': 'nation',
             'title': link.get_text(),
             'link': complete_link,
+            'image': image,
             'content': [link_inner.get_text().strip() for link_inner in
                         soup_link.select('section.summary > div > ul li')],
             'date': article_date,
@@ -206,15 +247,19 @@ def get_the_star():
         star_link = requests.get(complete_link)
         soup_link = BeautifulSoup(star_link.text, 'lxml')
         article_date = 0
+        image = ''
         try:
             article_date = soup_link.find("meta", property="og:updated_time")['content']
-            print(article_date)
+
+            # Get image from meta tags
+            image = soup_link.find("meta", property="og:image")['content']
         except (TypeError, ValueError):
             print('Star: invalid date meta detected')
         news_dict = {
             'source': 'star',
             'title': link.get_text(),
             'link': complete_link,
+            'image': image,
             'content': [link_inner.get_text() for link_inner in soup_link.select('.field.field-name-body p', limit=2)],
             'date': article_date,
             'date_added': datetime.datetime.utcnow()
