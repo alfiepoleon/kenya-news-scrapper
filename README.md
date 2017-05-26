@@ -27,13 +27,17 @@ A step by step series of examples that tell you have to get a development env ru
 python3 -m venv /path/to/new/virtual/environment
 ```
 
-3. Activate the Virtual env
+3. cd to the cloned directory.(The one with scape.py)
 
 ```
 cd /path/to/new/virtual/environment
+```
+
+4. Activate the Virtual env
+
+```
 source bin/activate
 ```
-4. cd to the cloned directory.(The one with scape.py)
 5. Install the requirements from requirements.txt
 
 ```
@@ -43,7 +47,7 @@ pip install -r requirements.txt
 6. Run __scrape_cli.py__ for cli version or...
 
 ```
-python scrape.py
+python scrape_cli.py
 ```
 7. First scrape the news sources to create and fill up the database before running the flask version, then...
 
@@ -53,7 +57,7 @@ python scheduler_script.py scrape_news
 8. Run app.py to start web server (you can check end points at app.py)
 
 ```
-python scrape.py
+python app.py
 ```
 
 __Note: you can run `python scheduler_script.py delete_old_news` to delete news more that 48 hours old__
