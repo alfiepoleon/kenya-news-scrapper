@@ -9,9 +9,22 @@ from pytz import timezone
 import os
 import sys
 
-'''
-This is used by flask, returns json {'title': title, 'link': link, 'content': ''}.
-'''
+"""
+This is used by flask, returns json, example:
+{
+    "_id" : ObjectId("5927ed7e699a164e8d6de4bd"),
+    "source" : "star",
+    "title" : "Uhuru leaves for Italy, to attend G7 summit",
+    "link" : "http://www.the-star.co.ke/news/2017/05/26/uhuru-leaves-for-italy-to-attend-g7-summit_c1568487",
+    "image" : "http://www.the-star.co.ke/sites/default/files/styles/open_graph/public/1568495.jpg?itok=4cqU6c1h",
+    "content" : [
+        "President Uhuru Kenyatta has travelled to Taormina, Italy, for the 43rd G7 summit.",
+        "The plane carrying Uhuru and his entourage departed Jomo Kenyatta International Airport shortly before 7:00 am on Friday."
+    ],
+    "date" : "2017-05-26T10:19:11+03:00",
+    "date_added" : ISODate("2017-05-26T08:55:26.724Z")
+}
+"""
 today = datetime.date.today()
 localtz = timezone('Africa/Nairobi')
 
@@ -43,7 +56,7 @@ def get_tuko():
     tuko = requests.get('https://www.tuko.co.ke')
     soup = BeautifulSoup(tuko.text, 'lxml', parse_only=SoupStrainer('a'))
     tuko = []
-    for link in soup.select('a.news__link', limit=12):
+    for link in soup.select('a.news__link', limit=6):
         news_title = '{}({})'.format(link.get_text(), link.get('href'))
         print(news_title)
         tuko_link = requests.get(link.get('href'))
