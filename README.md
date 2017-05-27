@@ -1,6 +1,6 @@
 # Kenya News Scrapper
 
-It gets news from [Tuko](https:www.tuko.co.ke), [Capital FM](http://www.capitalfm.co.ke/), [The Standard](https://www.standardmedia.co.ke/), [Daily Nation](http://www.nation.co.ke/news) and [The Star](http://www.the-star.co.ke/), then returns top news from each and a short summary of each article.
+It gets news from [Tuko](https://www.tuko.co.ke), [Capital FM](http://www.capitalfm.co.ke/), [The Standard](https://www.standardmedia.co.ke/), [Daily Nation](http://www.nation.co.ke/news) and [The Star](http://www.the-star.co.ke/), then returns top news from each and a short summary of each article.
 
 There is a cli version and a flask web api version.
 ### Screenshots
