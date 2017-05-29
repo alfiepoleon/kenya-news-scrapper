@@ -41,17 +41,23 @@ source /path/to/new/virtual/environment/bin/activate
 pip install -r requirements.txt
 ```
 
-7. Run __scrape_cli.py__ for cli version or...
+#### There are two ways to run this script
+Run the cli version
 
 ```
-python scrape_cli.py
+python scheduler_script.py get_news_cli
 ```
-8. First scrape the news sources to create and fill up the database before running the flask version, then...
+
+#### OR
+
+First scrape the news sources to create and fill up the database before running the flask version
 
 ```
 python scheduler_script.py scrape_news
 ```
-9. Run app.py to start web server (you can check end points at app.py)
+then...
+
+Run app.py to start web server (you can check end points at app.py)
 
 ```
 python app.py

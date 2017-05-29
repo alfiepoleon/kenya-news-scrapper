@@ -1,22 +1,36 @@
-from flask_script import Manager
-from app import app
-from scrape_web import get_news
-from datetime import datetime, timedelta
-from pymongo import MongoClient
 import os
+from datetime import datetime, timedelta
+
+from flask_script import Manager
+from pymongo import MongoClient
+
+from app import app
+from news.scrape_cli import get_all_news as get_news_cli
+from news.scrape_web import get_news
 
 manager = Manager(app)
 
 
 @manager.command
 def scrape_news():
+    """
+    Gets news from the web, then saves them in a database
+    """
     get_news()
+
+
+@manager.command
+def get_news_cli():
+    """
+    Gets news from the web. But just displays in the cli, no databases involved
+    """
+    get_news_cli()
 
 
 @manager.command
 def delete_old_news():
     """
-        Deletes news older than 48 hours from the database
+    Deletes news older than 48 hours from the database
     """
     # Configure the connection to the database
     client = MongoClient(os.environ['MongoDB_URI'])
