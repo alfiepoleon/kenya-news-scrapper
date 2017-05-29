@@ -5,10 +5,11 @@ import os
 app = Flask(__name__)
 
 # Configure the connection to the database
-client = MongoClient(os.environ['MongoDB_URI'])
-# client = MongoClient('localhost', 27017)
+# client = MongoClient(os.environ['MongoDB_URI'])
+client = MongoClient('localhost', 27017)
 db = client['kenya-news']  # Select the database
-collection = db.news
+news_collection = db.news
+ent_collection = db.ent
 
 """
 Api end points you can use with your server
@@ -26,7 +27,7 @@ def hello_world():
 @app.route('/tuko', defaults={'skip': 0})
 @app.route('/tuko/<int:skip>')
 def tuko(skip):
-    tuko_docs = [doc for doc in collection.find({
+    tuko_docs = [doc for doc in news_collection.find({
         'source': 'tuko'}, {'_id': 0}).skip(skip).limit(30).sort('date', -1)]
     return jsonify(tuko_docs)
 
@@ -34,7 +35,7 @@ def tuko(skip):
 @app.route('/capital', defaults={'skip': 0})
 @app.route('/capital/<int:skip>')
 def capital(skip):
-    capital_docs = [doc for doc in collection.find({
+    capital_docs = [doc for doc in news_collection.find({
         'source': 'capital'}, {'_id': 0}).skip(skip).limit(30).sort('date', -1)]
     return jsonify(capital_docs)
 
@@ -42,7 +43,7 @@ def capital(skip):
 @app.route('/nation', defaults={'skip': 0})
 @app.route('/nation/<int:skip>')
 def nation(skip):
-    nation_docs = [doc for doc in collection.find({
+    nation_docs = [doc for doc in news_collection.find({
         'source': 'nation'}, {'_id': 0}).skip(skip).limit(30).sort('date', -1)]
     return jsonify(nation_docs)
 
@@ -50,7 +51,7 @@ def nation(skip):
 @app.route('/the-star', defaults={'skip': 0})
 @app.route('/the-star/<int:skip>')
 def the_star(skip):
-    the_star_docs = [doc for doc in collection.find({
+    the_star_docs = [doc for doc in news_collection.find({
         'source': 'the_star'}, {'_id': 0}).skip(skip).limit(30).sort('date', -1)]
     return jsonify(the_star_docs)
 
@@ -58,7 +59,7 @@ def the_star(skip):
 @app.route('/standard', defaults={'skip': 0})
 @app.route('/standard/<int:skip>')
 def standard(skip):
-    standard_docs = [doc for doc in collection.find({
+    standard_docs = [doc for doc in news_collection.find({
         'source': 'standard'}, {'_id': 0}).skip(skip).limit(30).sort('date', -1)]
     return jsonify(standard_docs)
 
@@ -66,7 +67,7 @@ def standard(skip):
 @app.route('/latest-news/', defaults={'skip': 0})
 @app.route('/latest-news/<int:skip>')
 def latest_news(skip):
-    news = [doc for doc in collection.find({}, {'_id': 0}).skip(skip).limit(30).sort('date', -1)]
+    news = [doc for doc in news_collection.find({}, {'_id': 0}).skip(skip).limit(30).sort('date', -1)]
     return jsonify(news)
 
 

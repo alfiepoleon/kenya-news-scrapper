@@ -29,8 +29,8 @@ today = datetime.date.today()
 localtz = timezone('Africa/Nairobi')
 
 # Configure the connection to the database
-client = MongoClient(os.environ['MongoDB_URI'])
-# client = MongoClient('localhost', 27017)
+# client = MongoClient(os.environ['MongoDB_URI'])
+client = MongoClient('localhost', 27017)
 db = client['kenya-news']  # Select the database
 collection = db.news
 

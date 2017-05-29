@@ -99,6 +99,3 @@ def get_all_news():
     get_standard()
     get_the_star()
     get_nation()
-
-
-get_all_news()
