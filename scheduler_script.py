@@ -11,11 +11,25 @@ from news.scrape_web import get_news
 from entertainment.ent_cli import get_all_ent as get_ent_cli
 from entertainment.ent_web import get_ent
 
+from business.business_web import get_business
+
+# from entertainment.ent_cli import get_all_ent as get_ent_cli
+
 manager = Manager(app)
 
 
 @manager.command
-def scrape_news():
+def scrape_all():
+    """
+    Scraps News, Entertainment and Business
+    """
+    get_news()
+    get_ent()
+    get_business()
+
+
+@manager.command
+def news_web():
     """
     Gets news from the web, then saves them in a database
     """
@@ -28,6 +42,14 @@ def news_cli():
     Gets entertainment news from the web. But just displays in the cli, no databases involved
     """
     get_news_cli()
+
+
+@manager.command
+def business_web():
+    """
+    Gets news from the web, then saves them in a database
+    """
+    get_business()
 
 
 @manager.command
