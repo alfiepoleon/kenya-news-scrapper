@@ -6,23 +6,12 @@ import datetime
 import dateutil.parser
 from pytz import timezone
 import os
+import sys
+
 from check_connection import check_connection
 
 """
-This is used by flask, returns json, example:
-{
-    "_id" : ObjectId("5927ed7e699a164e8d6de4bd"),
-    "source" : "star",
-    "title" : "Uhuru leaves for Italy, to attend G7 summit",
-    "link" : "http://www.the-star.co.ke/news/2017/05/26/uhuru-leaves-for-italy-to-attend-g7-summit_c1568487",
-    "image" : "http://www.the-star.co.ke/sites/default/files/styles/open_graph/public/1568495.jpg?itok=4cqU6c1h",
-    "content" : [
-        "President Uhuru Kenyatta has travelled to Taormina, Italy, for the 43rd G7 summit.",
-        "The plane carrying Uhuru and his entourage departed Jomo Kenyatta International Airport shortly before 7:00 am on Friday."
-    ],
-    "date" : "2017-05-26T10:19:11+03:00",
-    "date_added" : ISODate("2017-05-26T08:55:26.724Z")
-}
+
 """
 today = datetime.date.today()
 localtz = timezone('Africa/Nairobi')
@@ -30,52 +19,11 @@ localtz = timezone('Africa/Nairobi')
 # Configure the connection to the database
 client = MongoClient(os.environ['MongoDB_URI'])
 db = client['kenya-news']  # Select the database
-collection = db.news
-
-
-def get_tuko():
-    tuko_url = 'https://www.tuko.co.ke'
-    if check_connection(tuko_url):
-        tuko = requests.get(tuko_url)
-        soup = BeautifulSoup(tuko.text, 'lxml', parse_only=SoupStrainer('a'))
-        tuko = []
-        for link in soup.select('a.news__link', limit=6):
-            news_title = '{}({})'.format(link.get_text(), link.get('href'))
-            print(news_title)
-            tuko_link = requests.get(link.get('href'))
-            soup_link = BeautifulSoup(tuko_link.text, 'lxml', parse_only=SoupStrainer(['p', 'meta', 'img']))
-            article_date = ''
-            try:
-                article_date = soup_link.find("meta", property="og:updated_time")['content']
-            except (TypeError, ValueError):
-                print('Tuko: No article date meta')
-                continue
-            image = ''
-            try:
-                image = soup_link.find("meta", property="og:image")['content']
-            except (TypeError, ValueError):
-                try:
-                    image = soup_link.find('img', class_='article-image__picture')['src']
-                except (TypeError, ValueError):
-                    print('Tuko: No image found')
-            news_dict = {
-                'source': 'tuko',
-                'title': link.get_text(),
-                'link': link.get('href'),
-                'image': image,
-                'content': [link_inner.get_text().strip(' ,.-') for link_inner in
-                            soup_link.select('p.align-left > strong', limit=3) if not
-                            link_inner.get_text().startswith('READ ALSO')],
-                'date': article_date,
-                'date_added': datetime.datetime.utcnow()
-            }
-            collection.update({'link': link.get('href')}, news_dict, upsert=True)
-            tuko.append(news_dict)
-        return tuko
+collection = db.business
 
 
 def get_capital():
-    capital_url = 'http://www.capitalfm.co.ke/news/{}/{:02}'.format(today.year, today.month)
+    capital_url = 'http://www.capitalfm.co.ke/business/{}/{:02}'.format(today.year, today.month)
     if check_connection(capital_url):
         capital = requests.get(capital_url)
         soup = BeautifulSoup(capital.text, 'lxml', parse_only=SoupStrainer('div'))
@@ -85,6 +33,7 @@ def get_capital():
             link = article_link['href']
             title = article_link.get_text()
 
+            # To strip the date and location ahead of an article summary
             try:
                 summary = article.p.get_text().split('-')[1].strip()
             except IndexError:
@@ -92,7 +41,6 @@ def get_capital():
 
             capital_link = requests.get(link)
             soup_link = BeautifulSoup(capital_link.text, 'lxml', parse_only=SoupStrainer(['meta', 'img']))
-            print(title, link)
             article_date = soup_link.find("meta", property="article:published_time")['content']
             image = ''
             try:
@@ -118,15 +66,14 @@ def get_capital():
 
 
 def get_standard():
-    standard_url = 'https://www.standardmedia.co.ke/'
+    standard_url = 'https://www.standardmedia.co.ke/business/category/19/business-news'
     if check_connection(standard_url):
         standard = requests.get(standard_url)
         soup = BeautifulSoup(standard.text, 'lxml', parse_only=SoupStrainer('div'))
         standard = []
-        for link in soup.select('.col-xs-8.zero a', limit=11):
+        for link in soup.select('h4 a', limit=14):
             if link.get_text():
                 news_title = '{}({})'.format(link.get_text().strip(), link.get('href'))
-                print(news_title)
                 standard_link = requests.get(link.get('href'))
                 soup_link = BeautifulSoup(standard_link.text, 'lxml', parse_only=SoupStrainer(['script']))
                 article_date = 0
@@ -160,16 +107,14 @@ def get_standard():
 
 
 def get_nation():
-    nation_url = 'http://www.nation.co.ke/'
+    nation_url = 'http://www.nation.co.ke/business'
     if check_connection(nation_url):
         nation = requests.get(nation_url)
         soup = BeautifulSoup(nation.text, 'lxml', parse_only=SoupStrainer(['div', 'section']))
         top_teaser = soup.select('.story-teaser.top-teaser > h1 > a')
-        medium_teasers = soup.select('.story-teaser.medium-teaser > h2 > a', limit=3)
-        small_teasers = soup.select('.story-teaser.small-teaser > h2 > a', limit=3)
-        gallery_words = soup.select('.gallery-words a', limit=6)
-        small_story_list = soup.select('.small-story-list a', limit=7)
-        nation_stories = top_teaser + medium_teasers + small_teasers + gallery_words + small_story_list
+        medium_teasers = soup.select('.story-teaser.medium-teaser > h2 > a', limit=10)
+        small_story_list = soup.select('.small-story-list a', limit=10)
+        nation_stories = top_teaser + medium_teasers + small_story_list
         nation = []
         for link in nation_stories:
             if link.get('href').startswith('http'):
@@ -177,7 +122,6 @@ def get_nation():
             else:
                 complete_link = 'http://www.nation.co.ke{}'.format(link.get('href'))
             news_title = '{}({})'.format(link.get_text(), complete_link)
-            print(news_title)
 
             # Nation is slow to parse and often leads to connection errors
             # Just to make sure one article failing doesn't lead to all nation links failing
@@ -233,18 +177,16 @@ def get_nation():
 
 
 def get_the_star():
-    star_url = 'http://www.the-star.co.ke/'
+    star_url = 'http://www.the-star.co.ke/sections/business_c29663'
     if check_connection(star_url):
         star = requests.get(star_url)
         soup = BeautifulSoup(star.text, 'lxml')
-        top_stories = soup.select('.field.field-name-title > h1 > a', limit=7)
-        medium_stories = soup.select('h1.field-content > a', limit=10)
-        star_stories = top_stories + medium_stories
+        top_stories = soup.select('.field.field-name-title > h1 > a', limit=20)
+        star_stories = top_stories
         star = []
         for link in star_stories:
             complete_link = 'http://www.the-star.co.ke{}'.format(link.get('href'))
             news_title = '{}({})'.format(link.get_text(), complete_link)
-            print(news_title)
             star_link = requests.get(complete_link)
             soup_link = BeautifulSoup(star_link.text, 'lxml')
             article_date = 0
@@ -261,8 +203,7 @@ def get_the_star():
                 'title': link.get_text(),
                 'link': complete_link,
                 'image': image,
-                'content': [link_inner.get_text() for link_inner in
-                            soup_link.select('.field.field-name-body p', limit=2)],
+                'content': [link_inner.get_text() for link_inner in soup_link.select('.field.field-name-body p', limit=2)],
                 'date': article_date,
                 'date_added': datetime.datetime.utcnow()
             }
@@ -271,9 +212,99 @@ def get_the_star():
         return star
 
 
-def get_news():
-    get_tuko()
+def get_business_daily():
+    business_daily_url = 'http://www.businessdailyafrica.com/'
+    if check_connection(business_daily_url):
+        business_daily = requests.get(business_daily_url)
+        soup = BeautifulSoup(business_daily.text, 'lxml')
+        featured = soup.select('article.article-list-featured')
+        list_grid = soup.select('article.article-list-grid')
+        business_daily_stories = featured + list_grid
+        business_daily = []
+        for _ in business_daily_stories:
+            link = _.a
+
+            # Format link
+            if link.get('href').startswith('http'):
+                complete_link = link.get('href')
+            else:
+                complete_link = 'http://www.businessdailyafrica.com/{}'.format(link.get('href'))
+
+            business_daily_link = requests.get(complete_link)
+            soup_link = BeautifulSoup(business_daily_link.text, 'lxml')
+
+            title = soup_link.title.string.split('-')[0].strip()
+
+            # Some titles are just 'Business Daily'
+            if title == 'Business Daily':
+                title = soup_link.find("meta", itemprop="name")['content'].strip()
+            # Get image from meta tags
+            image = ''
+            try:
+                image = soup_link.find("meta", property="og:image")['content']
+            except (TypeError, ValueError):
+                print('business_daily: invalid image meta detected')
+
+            article_date = 0
+            try:
+                article_date = soup_link.find("meta", property="og:updated_time")['content']
+
+            except (TypeError, ValueError):
+                print('business_daily: invalid date meta detected')
+            news_dict = {
+                'source': 'business_daily',
+                'title': title,
+                'link': complete_link,
+                'image': image,
+                'content': [link_inner.get_text() for link_inner in soup_link.select('.page-box-inner p', limit=2)],
+                'date': article_date,
+                'date_added': datetime.datetime.utcnow()
+            }
+            collection.update({'link': complete_link}, news_dict, upsert=True)
+            business_daily.append(news_dict)
+        return business_daily
+
+
+def get_kenyan_wall_street():
+    url = 'http://kenyanwallstreet.com/category/kenyan-news'
+    if check_connection(url):
+        ghafla = requests.get(url)
+        soup = BeautifulSoup(ghafla.text, 'lxml', parse_only=SoupStrainer('div'))
+        news_arr = []
+        for article in soup.select('div.mh-posts-list-content', limit=10):
+            article_link = article.a
+            link = article_link['href']
+            title = article_link.get_text().strip()
+            summary = article.find('div', class_='mh-excerpt').get_text().strip()
+            print(summary)
+            kenyan_wall_street_link = requests.get(link)
+            soup_link = BeautifulSoup(kenyan_wall_street_link.text, 'lxml', parse_only=SoupStrainer('meta'))
+            print(title, link)
+            article_date = soup_link.find("meta", property="article:published_time")['content']
+            image = ''
+            try:
+                image = soup_link.find("meta", property="og:image")['content']
+            except (TypeError, ValueError):
+                print('Kenyan Wall Street: No image found')
+
+            news_dict = {
+                'source': 'kenyan_wall_street',
+                'title': title,
+                'link': link,
+                'image': image,
+                'content': [summary],
+                'date': article_date,
+                'date_added': datetime.datetime.utcnow()
+            }
+            collection.update({'link': link}, news_dict, upsert=True)
+            news_arr.append(news_dict)
+        return ghafla
+
+
+def get_business():
     get_capital()
     get_standard()
     get_the_star()
     get_nation()
+    get_business_daily()
+    get_kenyan_wall_street()
