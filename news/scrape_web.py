@@ -84,7 +84,12 @@ def get_capital():
             article_link = article.a
             link = article_link['href']
             title = article_link.get_text()
-            summary = article.p.get_text().split('-')[1].strip()
+
+            try:
+                summary = article.p.get_text().split('-')[1].strip()
+            except IndexError:
+                summary = article.p.get_text().strip()
+
             capital_link = requests.get(link)
             soup_link = BeautifulSoup(capital_link.text, 'lxml', parse_only=SoupStrainer(['meta', 'img']))
             print(title, link)
@@ -256,7 +261,8 @@ def get_the_star():
                 'title': link.get_text(),
                 'link': complete_link,
                 'image': image,
-                'content': [link_inner.get_text() for link_inner in soup_link.select('.field.field-name-body p', limit=2)],
+                'content': [link_inner.get_text() for link_inner in
+                            soup_link.select('.field.field-name-body p', limit=2)],
                 'date': article_date,
                 'date_added': datetime.datetime.utcnow()
             }
