@@ -4,8 +4,8 @@ import os
 
 app = Flask(__name__)
 
-# Set mongo url as environment var
-os.environ['MongoDB_URI'] = 'mongodb://localhost/kenya-news'
+# Set mongo url as environment var locally
+# os.environ['MongoDB_URI'] = 'mongodb://localhost/kenya-news'
 
 # Configure the connection to the database
 client = MongoClient(os.environ['MongoDB_URI'])
