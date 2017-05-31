@@ -63,7 +63,7 @@ def get_tuko():
                 'date': article_date,
                 'date_added': datetime.datetime.utcnow()
             }
-            collection.update({'linkss': link.get('href')}, news_dict, upsert=True)
+            collection.update({'link': link.get('href')}, news_dict, upsert=True)
             tuko.append(news_dict)
         return tuko
 
