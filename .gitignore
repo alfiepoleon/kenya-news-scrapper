@@ -131,3 +131,4 @@ GitHub.sublime-settings
 
 bin/
 pip-selfcheck.json
+.DS_Store/
