@@ -12,6 +12,7 @@ from check_connection import check_connection
 This is used by flask, returns json, example:
 {
     "_id" : ObjectId("5927ed7e699a164e8d6de4bd"),
+    "category": "news",
     "source" : "star",
     "title" : "Uhuru leaves for Italy, to attend G7 summit",
     "link" : "http://www.the-star.co.ke/news/2017/05/26/uhuru-leaves-for-italy-to-attend-g7-summit_c1568487",
@@ -59,6 +60,7 @@ def get_tuko():
                 except (TypeError, ValueError):
                     print('Tuko: No image found')
             news_dict = {
+                'category': 'news',
                 'source': 'tuko',
                 'title': link.get_text(),
                 'link': link.get('href'),
@@ -104,6 +106,7 @@ def get_capital():
                     print('Capital: No image found')
 
             news_dict = {
+                'category': 'news',
                 'source': 'capital',
                 'title': title,
                 'link': link,
@@ -145,6 +148,7 @@ def get_standard():
                     continue
 
                 news_dict = {
+                    'category': 'news',
                     'source': 'standard',
                     'title': link.get_text().strip(),
                     'link': link.get('href'),
@@ -218,6 +222,7 @@ def get_nation():
                     print('Nation: Invalid date meta detected')
                     continue
             news_dict = {
+                'category': 'news',
                 'source': 'nation',
                 'title': link.get_text(),
                 'link': complete_link,
@@ -257,6 +262,7 @@ def get_the_star():
             except (TypeError, ValueError):
                 print('Star: invalid date meta detected')
             news_dict = {
+                'category': 'news',
                 'source': 'star',
                 'title': link.get_text(),
                 'link': complete_link,

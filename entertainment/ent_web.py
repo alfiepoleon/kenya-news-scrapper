@@ -53,6 +53,7 @@ def get_tuko():
                 except (TypeError, ValueError):
                     print('Tuko: No image found')
             news_dict = {
+                'category': 'entertainment',
                 'source': 'tuko',
                 'title': link.get_text(),
                 'link': link.get('href'),
@@ -89,6 +90,7 @@ def get_ghafla():
                 print('ghafla: No image found')
 
             news_dict = {
+                'category': 'entertainment',
                 'source': 'ghafla',
                 'title': title,
                 'link': link,
@@ -132,6 +134,7 @@ def get_sde():
                 except (TypeError, ValueError):
                     print('Tuko: No image found')
             news_dict = {
+                'category': 'entertainment',
                 'source': 'sde',
                 'title': link.get_text(),
                 'link': link.get('href'),
@@ -181,6 +184,7 @@ def get_mpasho():
                 print('Mpasho: No image found')
 
             news_dict = {
+                'category': 'entertainment',
                 'source': 'mpasho',
                 'title': title,
                 'link': link.get('href'),

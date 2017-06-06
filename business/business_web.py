@@ -1,12 +1,12 @@
+import datetime
 import json
+import os
+
+import dateutil.parser
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
 from pymongo import MongoClient
-import datetime
-import dateutil.parser
 from pytz import timezone
-import os
-import sys
 
 from check_connection import check_connection
 
@@ -52,6 +52,7 @@ def get_capital():
                     print('Capital: No image found')
 
             news_dict = {
+                'category': 'business',
                 'source': 'capital',
                 'title': title,
                 'link': link,
@@ -92,6 +93,7 @@ def get_standard():
                     continue
 
                 news_dict = {
+                    'category': 'business',
                     'source': 'standard',
                     'title': link.get_text().strip(),
                     'link': link.get('href'),
@@ -162,6 +164,7 @@ def get_nation():
                     print('Nation: Invalid date meta detected')
                     continue
             news_dict = {
+                'category': 'business',
                 'source': 'nation',
                 'title': link.get_text(),
                 'link': complete_link,
@@ -199,11 +202,13 @@ def get_the_star():
             except (TypeError, ValueError):
                 print('Star: invalid date meta detected')
             news_dict = {
+                'category': 'business',
                 'source': 'star',
                 'title': link.get_text(),
                 'link': complete_link,
                 'image': image,
-                'content': [link_inner.get_text() for link_inner in soup_link.select('.field.field-name-body p', limit=2)],
+                'content': [link_inner.get_text() for link_inner in
+                            soup_link.select('.field.field-name-body p', limit=2)],
                 'date': article_date,
                 'date_added': datetime.datetime.utcnow()
             }
@@ -252,6 +257,7 @@ def get_business_daily():
             except (TypeError, ValueError):
                 print('business_daily: invalid date meta detected')
             news_dict = {
+                'category': 'business',
                 'source': 'business_daily',
                 'title': title,
                 'link': complete_link,
@@ -288,6 +294,7 @@ def get_kenyan_wall_street():
                 print('Kenyan Wall Street: No image found')
 
             news_dict = {
+                'category': 'business',
                 'source': 'kenyan_wall_street',
                 'title': title,
                 'link': link,
