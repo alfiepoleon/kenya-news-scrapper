@@ -72,4 +72,4 @@ __Note: you can run `python scheduler_script.py delete_old_news` to delete news 
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details
