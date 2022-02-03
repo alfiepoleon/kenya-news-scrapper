@@ -78,6 +78,47 @@ def latest_news(skip):
     return jsonify(news)
 
 
+@app.route('/news/world_radio_and_tv/', defaults={'skip': 0})
+@app.route('/news/world_radio_and_tv/<int:skip>')
+def BBC_news(skip):
+    bbc_docs = [doc for doc in news_collection.find({
+        'source': 'bbc'}, {'_id': 0}).skip(skip).limit(30).sort('date', -1)]
+    return jsonify(bbc_docs)
+
+
+@app.route('/news/', defaults={'skip': 0})
+@app.route('/news//<int:skip>')
+def BBC_news(skip):
+    aj_docs = [doc for doc in news_collection.find({
+        'source': 'aljazeera'}, {'_id': 0}).skip(skip).limit(30).sort('date', -1)]
+    return jsonify(aj_docs)
+
+
+@app.route('/news/world/africa/', defaults={'skip': 0})
+@app.route('/news/world/africa/<int:skip>')
+def BBCafrica_news(skip):
+    bbcafrica_docs = [doc for doc in news_collection.find({
+        'source': 'bbc'}, {'_id': 0}).skip(skip).limit(30).sort('date', -1)]
+    return jsonify(bbcafrica_docs)
+
+
+@app.route('/category/news/', defaults={'skip': 0})
+@app.route('/category/news/<int:skip>')
+def K24_news(skip):
+    K24_docs = [doc for doc in news_collection.find({
+        'source': 'bbc'}, {'_id': 0}).skip(skip).limit(30).sort('date', -1)]
+    return jsonify(K24_docs)
+
+
+@app.route('/category/local-news/', defaults={'skip': 0})
+@app.route('/category/local-news/<int:skip>')
+def KBC_news(skip):
+    KBC_docs = [doc for doc in news_collection.find({
+        'source': 'bbc'}, {'_id': 0}).skip(skip).limit(30).sort('date', -1)]
+    return jsonify(KBC_docs)
+
+
+
 '''
     News END
 '''
